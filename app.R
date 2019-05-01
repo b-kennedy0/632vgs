@@ -20,8 +20,10 @@ ui <- fluidPage(
             img(src = "632logo.png", height = 60, width = 250),
             br(),
             p("Created by Bradley Kennedy for ",
-              a("632 VGS", href = "https://632vgs.co.uk"))
-        ),
+              a("632 VGS", href = "https://632vgs.co.uk"),
+              br(),
+              a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/")
+            )),
 
         mainPanel(
             tags$h3("Calculations:"),
