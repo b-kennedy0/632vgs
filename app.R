@@ -1,7 +1,7 @@
 library(shiny)
 library(ggplot2)
 
-dataset <- read.csv("aircraft_weights.csv")
+dataset <- read.csv("aircraft_weights.csv", fileEncoding="UTF-8-BOM")
 
 ui <- fluidPage(
 
@@ -20,9 +20,9 @@ ui <- fluidPage(
             img(src = "632logo.png", height = 60, width = 250),
             br(),
             p("Created by Bradley Kennedy for ",
-              a("632 VGS", href = "https://632vgs.co.uk"),
+              a("632 VGS", href = "https://632vgs.co.uk", target="_blank"),
               br(),
-              a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/")
+              a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/", target="_blank")
             )),
 
         mainPanel(
@@ -226,7 +226,7 @@ server <- function(input, output) {
         passenger_para <- passenger + 7
         AUM <- commander_para + passenger_para + aircraft
         
-        plotdata <- read.csv("plotdata.csv")
+        plotdata <- read.csv("plotdata.csv", fileEncoding="UTF-8-BOM")
         plotdata$Weight[plotdata$Item=="Aircraft"] <- aircraft
         plotdata$Weight[plotdata$Item=="Commander"] <- commander
         plotdata$Weight[plotdata$Item=="Passenger"] <- passenger
