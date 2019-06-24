@@ -1,7 +1,10 @@
 library(shiny)
 library(ggplot2)
+library(tidyverse)
 
-dataset <- read.csv("aircraft_weights.csv", fileEncoding="UTF-8-BOM")
+id <- "1aS6l4KAXX7iuvSSfA6OlkYIlC_eF3POd"
+dataset <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+dataset <- dataset[-1]
 
 ui <- fluidPage(
 
@@ -22,7 +25,11 @@ ui <- fluidPage(
             p("Created by Bradley Kennedy for ",
               a("632 VGS", href = "https://632vgs.co.uk", target="_blank"),
               br(),
-              a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/", target="_blank")
+              br(),
+              a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/", target="_blank"),
+              br(),
+              br(),
+              a("Add new aircraft", href = "https://docs.google.com/forms/d/e/1FAIpQLSdZUL2xQoC6--gYshqy-mRN6uogpsxnZMvVtqh0qOgCmbNavg/viewform?usp=sf_link", target = "_blank")
             )),
 
         mainPanel(
