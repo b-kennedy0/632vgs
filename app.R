@@ -45,11 +45,6 @@ ui <- fluidPage(
            textOutput("ballast"),
            textOutput("approachspeed"),
            HTML("<hr>"),
-           tags$h3("Other available aircraft:"),
-           textOutput("aircraft1"),
-           textOutput("aircraft2"),
-           textOutput("aircraft3"),
-           HTML("<hr>"),
            plotOutput("stackedbar")
         )
     )
@@ -181,46 +176,6 @@ server <- function(input, output) {
             print("Approach speed 55kts")
         } else {
             print("Approach speed 60kts")
-        }
-    })
-    
-    output$aircraft1 <- renderText({
-        commander <- input$commander
-        passenger <- input$passenger
-        commander_para <- commander + 7
-        passenger_para <- passenger + 7
-        ze553 <- commander_para + passenger_para + 417.85
-        
-        if (ze553 < 625){
-            print("ZE553 available")
-        } else {
-            print("ZE553 LIMIT EXCEEDED")
-        }
-    })
-        output$aircraft2 <- renderText({
-            commander <- input$commander
-            passenger <- input$passenger
-            commander_para <- commander + 7
-            passenger_para <- passenger + 7
-            ze584 <- commander_para + passenger_para + 421.697
-            
-        if (ze584 < 625){
-          print("ZE584 available")
-        }  else {
-            print("ZE584 LIMIT EXCEEDED")
-        }  
-    })
-        output$aircraft3 <- renderText({
-            commander <- input$commander
-            passenger <- input$passenger
-            commander_para <- commander + 7
-            passenger_para <- passenger + 7
-            ze637 <- commander_para + passenger_para + 421.048
-
-        if (ze637 < 625){
-            print("ZE637 available")
-        } else {
-            print("ZE637 LIMIT EXCEEDED")
         }
     })
     
