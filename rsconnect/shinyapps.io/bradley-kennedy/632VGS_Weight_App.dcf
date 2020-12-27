@@ -5,9 +5,8 @@ account: bradley-kennedy
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 898331
-bundleId: 2174602
+bundleId: 4031451
 url: https://bradley-kennedy.shinyapps.io/632VGS_Weight_App/
-when: 1561392237.63498
+when: 1609028083.92755
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: aircraft_weights.csv

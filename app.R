@@ -1,12 +1,26 @@
 library(shiny)
 library(ggplot2)
 library(tidyverse)
+library(shinydisconnect)
 
 id <- "1aS6l4KAXX7iuvSSfA6OlkYIlC_eF3POd"
 dataset <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 dataset <- dataset[-1]
 
 ui <- fluidPage(
+    disconnectMessage(
+        text = "App Disconnected - Please refresh the page and try again. If the error persists, contact Brad.",
+        refresh = "Refresh",
+        background = "#FFFFFF",
+        colour = "#444444",
+        refreshColour = "#337AB7",
+        overlayColour = "#000000",
+        overlayOpacity = 0.6,
+        width = "full",
+        top = "center",
+        size = 22,
+        css = ""
+    ),
 
     titlePanel("632 VGS Weight Limit App"),
 
