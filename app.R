@@ -22,41 +22,51 @@ ui <- fluidPage(
         css = ""
     ),
 
-    titlePanel("632 VGS Weight Limit App"),
+    titlePanel(" "),
 
     sidebarLayout(
         sidebarPanel(
-            img(src = "632crest.png", height = 120, width = 100), style="text-align: center;",
-            helpText("Select the Aircraft from the dropdown",
-                     "box. Then enter weight for each",
-                     "person, WITHOUT a parachute."),
+            style="text-align: center;",
+            h3("632 VGS Weight Limit App"),
+            img(src = "632crest.png", height = 120, width = 100),
+            br(),
+            br(),
+            helpText("(1) Select the Aircraft from the dropdown box."),
             selectInput("aircraft", "Aircraft Registration", sort(unique(dataset$aircraft))),
-            numericInput("commander", "Aircraft Commander (no parachute)", 0, 0, 120, 1),
-            numericInput("passenger", "Passenger (no parachute)", 0, 0, 120, 1),
+            hr(),
+            helpText("(2) Enter weight for each person, WITHOUT a parachute."),
+            numericInput("commander", HTML(paste0("Aircraft Commander ","<span style=\"text-decoration:underline\">(no parachute)</span>")), 0, 0, 120, 1),
+            numericInput("passenger", HTML(paste0("Passenger ","<span style=\"text-decoration:underline\">(no parachute)</span>")), 0, 0, 120, 1),
             br(),
             img(src = "632logo.png", height = 60, width = 250),
             br(),
-            p("Created by Bradley Kennedy for ",
-              a("632 VGS", href = "https://632vgs.co.uk", target="_blank"),
+            p("Created by ",
+                a("Bradley Kennedy", href = "mailto:bradley.kennedy100@rafac.mod.gov.uk", target="_blank"),
+                "for ",
+                a("632 VGS", href = "https://632vgs.co.uk", target="_blank"),
               br(),
               br(),
-              a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/", target="_blank"),
-              br(),
-              br(),
-              a("Add new aircraft", href = "https://docs.google.com/forms/d/e/1FAIpQLSdZUL2xQoC6--gYshqy-mRN6uogpsxnZMvVtqh0qOgCmbNavg/viewform?usp=sf_link", target = "_blank")
+                a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/", target="_blank"),
+                "|" , 
+                a("Add new aircraft", href = "https://docs.google.com/forms/d/e/1FAIpQLSdZUL2xQoC6--gYshqy-mRN6uogpsxnZMvVtqh0qOgCmbNavg/viewform?usp=sf_link", target = "_blank")
             )),
 
         mainPanel(
+            tags$h3("Assumptions"),
+            HTML("<ul><li>Aircraft Commander in the rear seat</li><li>Passenger in the front seat</li>
+                 <li>Nil ballast weights currently fitted</li></ul>"),
+            HTML("<hr>"),
             tags$h3("Calculations:"),
-            textOutput("commander"),
-            textOutput("passenger"),
+            htmlOutput("commander"),
+            htmlOutput("passenger"),
+            textOutput("combined_crew"),
             textOutput("air_weight"),
             textOutput("totalaum"),
             HTML("<hr>"),
             tags$h3("Output:"),
-            textOutput("aumlimit"),
-           textOutput("frontseat"),
-           textOutput("ballast"),
+            htmlOutput("aumlimit"),
+           htmlOutput("frontseat"),
+           htmlOutput("ballast"),
            textOutput("approachspeed"),
            HTML("<hr>"),
            plotOutput("stackedbar")
@@ -76,7 +86,7 @@ server <- function(input, output) {
         AUM <- commander_para + passenger_para + aircraft
         
         if (commander_para > 110){
-        print(paste0("AIRCRAFT COMMANDER OVERWEIGHT = ", commander_para,"kg"))
+        return(paste("<span style=\"color:red\">AIRCRAFT COMMANDER OVERWEIGHT = ", commander_para,"kg","</span>"))
         }  else{
         print(paste0("Aircraft commander with parachute = ", commander_para,"kg"))
         }
@@ -92,11 +102,21 @@ server <- function(input, output) {
         AUM <- commander_para + passenger_para + aircraft
         
         if (passenger_para > 110){
-            print(paste0("PASSENGER OVERWEIGHT = ", passenger_para, "kg"))
+            return(paste("<span style=\"color:red\">PASSENGER OVERWEIGHT = ", passenger_para, "kg","</span>"))
         } else{
             print(paste0("Passenger with parachute = ", passenger_para,"kg"))
         }
     })
+    
+    output$combined_crew <- renderText({
+        commander <- input$commander
+        passenger <- input$passenger
+        
+        commander_para <- commander + 7
+        passenger_para <- passenger + 7
+        combined <- commander_para + passenger_para
+        print(paste0("Combined crew = ", combined, "kg"))
+        })
         
     output$air_weight <- renderText({
         commander <- input$commander
@@ -134,7 +154,7 @@ server <- function(input, output) {
         aumlimit <- if(AUM < 625){
             print("Aircraft All-Up-Mass Limits OK")
         }  else {
-            print("Aircraft All-Up-Mass Limits EXCEEDED")  
+            return("<span style=\"color:red\">Aircraft All-Up-Mass Limits EXCEEDED</span>")
         }
     })
     
@@ -148,7 +168,7 @@ server <- function(input, output) {
         AUM <- commander_para + passenger_para + aircraft
         
         min_front <- if(passenger_para < 70){
-            print("Front seat minimum weight NOT met")
+            return("<span style=\"color:red\">Front seat minimum weight NOT met</span>")
         } else {
             print("Front seat minimum weight OK")
         }
@@ -164,17 +184,17 @@ server <- function(input, output) {
         AUM <- commander_para + passenger_para + aircraft
         
         ballast_weights <- if(passenger_para < 42){
-            print("TOO LIGHT TO FLY")
+            return("<span style=\"color:red\">TOO LIGHT TO FLY</span>")
         } else if (passenger_para < 55) {
-            print("REAR SEAT ONLY")
+            return("<span style=\"color:orange\">PASSENGER IN REAR SEAT ONLY</span>")
         } else if (passenger_para < 63) {
-            print("TWO Ballast weights MUST be fitted")
+            return("<span style=\"color:orange\">TWO Ballast weights to be fitted</span>")
         } else if (passenger_para < 71) {
-            print("ONE Ballast weight MUST be fitted")
+            return("<span style=\"color:orange\">ONE Ballast weight to be fitted</span>")
         } else if (passenger_para < 111) {
             print("No Ballast Required")
         } else
-            print("TOO HEAVY TO FLY")
+            return("<span style=\"color:red\">TOO HEAVY TO FLY</span>")
     })
     
     output$approachspeed <- renderText({
