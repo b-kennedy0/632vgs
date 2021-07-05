@@ -2,10 +2,12 @@ library(shiny)
 library(ggplot2)
 library(tidyverse)
 library(shinydisconnect)
+library(dplyr)
 
 id <- "1aS6l4KAXX7iuvSSfA6OlkYIlC_eF3POd"
 dataset <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 dataset <- dataset[-1]
+dataset$maxcrew <- round(625 - dataset$weight, digits = 2)
 
 ui <- fluidPage(
     disconnectMessage(
@@ -27,14 +29,10 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             style="text-align: center;",
-            h3("632 VGS Weight Limit App"),
-            img(src = "632crest.png", height = 120, width = 100),
+            uiOutput("images"),
             br(),
             br(),
-            helpText("(1) Select the Aircraft from the dropdown box."),
-            selectInput("aircraft", "Aircraft Registration", sort(unique(dataset$aircraft))),
-            hr(),
-            helpText("(2) Enter weight for each person, WITHOUT a parachute."),
+            selectInput("aircraft", "Aircraft", sort(unique(dataset$aircraft))),
             numericInput("commander", HTML(paste0("Aircraft Commander ","<span style=\"text-decoration:underline\">(no parachute)</span>")), 0, 0, 120, 1),
             numericInput("passenger", HTML(paste0("Passenger ","<span style=\"text-decoration:underline\">(no parachute)</span>")), 0, 0, 120, 1),
             br(),
@@ -65,16 +63,22 @@ ui <- fluidPage(
             HTML("<hr>"),
             tags$h3("Output:"),
             htmlOutput("aumlimit"),
-           htmlOutput("frontseat"),
-           htmlOutput("ballast"),
-           textOutput("approachspeed"),
-           HTML("<hr>"),
-           plotOutput("stackedbar")
+            htmlOutput("frontseat"),
+            htmlOutput("ballast"),
+            textOutput("approachspeed"),
+            tags$h4("Alternative aircraft:"),
+            tableOutput("alt_aircraft")
+            # HTML("<hr>"),
+            # plotOutput("stackedbar")
+            )
         )
-    )
 )
 
 server <- function(input, output) {
+    
+    output$images <- renderUI({
+        tags$div(img(src = "632crest.png", width = 80, height = 100, style = "float:left;"), br(), h3("632 VGS Weight App"))
+    })
 
     output$commander <- renderText({
         commander <- input$commander
@@ -127,7 +131,7 @@ server <- function(input, output) {
         passenger_para <- passenger + 7
         AUM <- commander_para + passenger_para + aircraft
         
-    print(paste0("Aircraft weight = ", aircraft,"kg"))
+    print(paste0("Aircraft weight = ", round(aircraft, digits = 2), "kg"))
     })
     
     output$totalaum <- renderText({
@@ -139,7 +143,7 @@ server <- function(input, output) {
         passenger_para <- passenger + 7
         AUM <- commander_para + passenger_para + aircraft
         
-    print(paste0("Aircraft All-Up-Mass = ", AUM,"kg"))
+    print(paste0("Aircraft All-Up-Mass = ", round(AUM, digits = 2), "kg"))
     })
     
     output$aumlimit <- renderText({
@@ -212,6 +216,19 @@ server <- function(input, output) {
             print("Approach speed 60kts")
         }
     })
+    
+    output$alt_aircraft <- renderTable({
+        commander <- input$commander
+        passenger <- input$passenger
+        
+        commander_para <- commander + 7
+        passenger_para <- passenger + 7
+        combined <- commander_para + passenger_para
+        dataset <- mutate(dataset, 
+                          overweight = if_else(maxcrew < combined, "TRUE", "FALSE"))
+        colnames(dataset) = c("Tail No", "A/C Weight", "Max Crew Weight", "Overweight?")
+        dataset
+        }, striped = TRUE, spacing = "s")
     
     output$stackedbar <- renderPlot({
         commander <- input$commander
