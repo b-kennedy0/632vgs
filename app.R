@@ -1,4 +1,5 @@
 library(shiny)
+library(shinyvalidate)
 library(ggplot2)
 library(tidyverse)
 library(shinydisconnect)
@@ -83,6 +84,11 @@ ui <- fluidPage(
 )
 
 server <- function(input, output) {
+    
+    iv <- InputValidator$new()
+    iv$add_rule("commander", sv_between(0, 120))
+    iv$add_rule("passenger", sv_between(0, 120))
+    iv$enable()
     
     output$images <- renderUI({
         tags$div(img(src = "632crest.png", width = 80, height = 100, style = "float:left;"), br(), h4("632 VGS Weight App"), helpText("This tool is for information only.",
