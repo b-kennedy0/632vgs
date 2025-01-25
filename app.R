@@ -26,65 +26,60 @@ ui <- fluidPage(
     css = ""
   ),
   
-  navbarPage("Ballast Weight App",
-             tabPanel("Individual",
-                      
-                      sidebarLayout(
-                        sidebarPanel(
-                          style="text-align: center;",
-                          uiOutput("images"),
-                          br(),
-                          selectInput("aircraft", "Aircraft", sort(unique(dataset$aircraft))),
-                          numericInput("commander", HTML(paste0("Aircraft Commander ","<span style=\"text-decoration:underline\">(no parachute)</span>")), 0, 0, 120, 1),
-                          numericInput("passenger", HTML(paste0("Passenger ","<span style=\"text-decoration:underline\">(no parachute)</span>")), 0, 0, 120, 1),
-                          br(),
-                          img(src = "632logo.png", height = 60, width = 250),
-                          br(),
-                          p("Created by ",
-                            a("Brad Kennedy", href = "mailto:bradley.kennedy100@rafac.mod.gov.uk", target="_blank"),
-                            "for ",
-                            a("632 VGS", href = "https://632vgs.co.uk", target="_blank"),
-                            br(),
-                            br(),
-                            a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/", target="_blank"),
-                            "|" , 
-                            a("Add new aircraft", href = "https://docs.google.com/forms/d/e/1FAIpQLSdZUL2xQoC6--gYshqy-mRN6uogpsxnZMvVtqh0qOgCmbNavg/viewform?usp=sf_link", target = "_blank")
-                          )),
-                        
-                        mainPanel(
-                          tags$style(".fa-check-circle {color:#008000}"),
-                          tags$style(".fa-times-circle {color:#FF0000}"),
-                          tags$style(".fa-exclamation-circle {color:#FFA500}"),
-                          tags$style("@import url(https://use.fontawesome.com/releases/v5.7.2/css/all.css);"),
-                          tags$h3(HTML(as.character(icon("lightbulb")), " Assumptions")),
-                          HTML("<ul><li>Aircraft Commander in the rear seat</li><li>Passenger in the front seat</li>
-                 <li>Nil ballast weights fitted</li><li>Nil carry-on items</li></ul>"),
-                          HTML("<hr>"),
-                          column(4,
-                                 tags$h3(HTML(as.character(icon("calculator")), " Calculations")),
-                                 htmlOutput("commander"),
-                                 htmlOutput("passenger"),
-                                 textOutput("combined_crew"),
-                                 textOutput("air_weight"),
-                                 textOutput("totalaum"),
-                          ),
-                          column(4,
-                                 tags$h3(HTML(as.character(icon("clipboard-check")), " Output")),
-                                 htmlOutput("aumlimit"),
-                                 htmlOutput("frontseat"),
-                                 htmlOutput("ballast"),
-                                 br(),
-                                 htmlOutput("approachspeed")),
-                          column(10,
-                                 HTML("<hr>"),
-                                 tags$h3(HTML(as.character(icon("plane")), " Alternative aircraft")),
-                                 tableOutput("alt_aircraft"))
-                          # HTML("<hr>"),
-                          # plotOutput("stackedbar")
-                        )
-                      )
-             ),
-  )
+  titlePanel(""),
+        sidebarLayout(
+          sidebarPanel(
+            style="text-align: center;",
+            uiOutput("images"),
+            br(),
+            selectInput("aircraft", "Aircraft", sort(unique(dataset$aircraft))),
+            numericInput("commander", HTML(paste0("Aircraft Commander ","<span style=\"text-decoration:underline\">(WITH parachute)</span>")), 0, 0, 120, 1),
+            numericInput("passenger", HTML(paste0("Passenger ","<span style=\"text-decoration:underline\">(WITH parachute)</span>")), 0, 0, 120, 1),
+            selectInput("ballast", "Ballast Weights", c("None" = 0, "One" = 7, "Two" = 15)),
+            br(),
+            img(src = "632logo.png", height = 60, width = 250),
+            br(),
+            p("Created by ",
+              a("Brad Kennedy", href = "mailto:bradley.kennedy100@rafac.mod.gov.uk", target="_blank"),
+              "for ",
+              a("632 VGS", href = "https://632vgs.co.uk", target="_blank"),
+              br(),
+              br(),
+              a("Source Code", href = "https://github.com/b-kennedy0/632vgs/blob/master/app.R/", target="_blank"),
+              "|" , 
+              a("Add new aircraft", href = "https://docs.google.com/forms/d/e/1FAIpQLSdZUL2xQoC6--gYshqy-mRN6uogpsxnZMvVtqh0qOgCmbNavg/viewform?usp=sf_link", target = "_blank")
+            )),
+          
+          mainPanel(
+            tags$style(".fa-check-circle {color:#008000}"),
+            tags$style(".fa-times-circle {color:#FF0000}"),
+            tags$style(".fa-exclamation-circle {color:#FFA500}"),
+            tags$style("@import url(https://use.fontawesome.com/releases/v5.7.2/css/all.css);"),
+            tags$h3(HTML(as.character(icon("lightbulb")), " Assumptions")),
+            HTML("<ul><li>Aircraft Commander in the rear seat</li><li>Passenger in the front seat</li><li>Nil carry-on items</li></ul>"),
+            HTML("<hr>"),
+            column(4,
+                   tags$h3(HTML(as.character(icon("calculator")), " Calculations")),
+                   htmlOutput("commander"),
+                   htmlOutput("passenger"),
+                   textOutput("combined_crew"),
+                   textOutput("ballast_weight"),
+                   textOutput("air_weight"),
+                   textOutput("totalaum"),
+            ),
+            column(4,
+                   tags$h3(HTML(as.character(icon("clipboard-check")), " Output")),
+                   htmlOutput("aumlimit"),
+                   htmlOutput("frontseat"),
+                   htmlOutput("ballast"),
+                   br(),
+                   htmlOutput("approachspeed")),
+            column(10,
+                   HTML("<hr>"),
+                   tags$h3(HTML(as.character(icon("plane")), " Alternative aircraft")),
+                   tableOutput("alt_aircraft"))
+                    )
+                  )
 )
 
 server <- function(input, output) {
@@ -95,62 +90,45 @@ server <- function(input, output) {
   iv$enable()
   
   output$images <- renderUI({
-    tags$div(img(src = "632crest.png", width = 80, height = 100, style = "float:left;"), br(), h4("632 VGS Weight App"), helpText("This tool is for information only.",
+    tags$div(img(src = "632crest.png", width = 80, height = 100, style = "float:left;"), br(), h4("Ballast Weight App"), helpText("For information only.",
                                                                                                                                   br(),
                                                                                                                                   "Responsibility remains with the Aircraft Commander"))
   })
   
   output$commander <- renderText({
     commander <- input$commander
-    passenger <- input$passenger
-    aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
     
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
-    
-    if (commander_para > 110){
-      return(paste("<span style=\"color:red\">AIRCRAFT COMMANDER OVERWEIGHT = ", commander_para,"kg ","</span>", tags$p(fa("times-circle", fill = "#FF0000"))))
+    if (commander > 110){
+      return(paste("<span style=\"color:red\">AIRCRAFT COMMANDER OVERWEIGHT = ", commander,"kg ","</span>", tags$p(fa("times-circle", fill = "#FF0000"))))
     }  else{
-      print(paste0("Aircraft commander with parachute = ", commander_para,"kg"))
+      print(paste0("Aircraft commander with parachute = ", commander,"kg"))
     }
   })
   
   output$passenger <- renderText({
-    commander <- input$commander
     passenger <- input$passenger
-    aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
     
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
-    
-    if (passenger_para > 110){
-      return(paste("<span style=\"color:red\">PASSENGER OVERWEIGHT = ", passenger_para, "kg ","</span>", tags$p(fa("times-circle", fill = "#FF0000"))))
+    if (passenger > 110){
+      return(paste("<span style=\"color:red\">PASSENGER OVERWEIGHT = ", passenger, "kg ","</span>", tags$p(fa("times-circle", fill = "#FF0000"))))
     } else{
-      print(paste0("Passenger with parachute = ", passenger_para,"kg"))
+      print(paste0("Passenger with parachute = ", passenger,"kg"))
     }
   })
   
   output$combined_crew <- renderText({
     commander <- input$commander
     passenger <- input$passenger
-    
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    combined <- commander_para + passenger_para
+    combined <- commander + passenger
     print(paste0("Combined crew = ", combined, "kg"))
   })
   
+  output$ballast_weight <- renderText({
+    ballast <- input$ballast
+    print(paste0("Ballast weight = ", ballast, "kg"))
+  })
+  
   output$air_weight <- renderText({
-    commander <- input$commander
-    passenger <- input$passenger
     aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
-    
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
-    
     print(paste0("Aircraft weight = ", round(aircraft, digits = 2), "kg"))
   })
   
@@ -158,10 +136,9 @@ server <- function(input, output) {
     commander <- input$commander
     passenger <- input$passenger
     aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
-    
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
+    ballast <- as.numeric(input$ballast)
+
+    AUM <- commander + passenger + aircraft + ballast
     
     print(paste0("Aircraft All-Up-Mass = ", round(AUM, digits = 2), "kg"))
   })
@@ -170,10 +147,9 @@ server <- function(input, output) {
     commander <- input$commander
     passenger <- input$passenger
     aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
-    
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
+    ballast <- as.numeric(input$ballast)
+
+    AUM <- commander + passenger + aircraft + ballast
     
     aumlimit <- if(AUM < 625){
       HTML(paste0(fa("check-circle", fill = "#008000"), "Aircraft All-Up-Mass Limits OK"))
@@ -183,15 +159,9 @@ server <- function(input, output) {
   })
   
   output$frontseat <- renderText({
-    commander <- input$commander
     passenger <- input$passenger
-    aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
-    
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
-    
-    min_front <- if(passenger_para < 70){
+
+    min_front <- if(passenger < 55){
       return(paste0((fa("times-circle", fill = "#FF0000")), "<span style=\"color:red\">Front seat minimum weight NOT met </span>"))
     } else {
       HTML(paste0((fa("check-circle", fill = "#008000")), "Front seat minimum weight OK"))
@@ -199,24 +169,22 @@ server <- function(input, output) {
   })
   
   output$ballast <- renderText({
-    commander <- input$commander
     passenger <- input$passenger
-    aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
-    
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
-    
-    ballast_weights <- if(passenger_para < 42){
+
+    ballast_weights <- if(passenger < 42){
       return(paste0((fa("times-circle", fill = "#FF0000")), "<span style=\"color:red\">PASSENGER TOO LIGHT TO FLY </span>"))
-    } else if (passenger_para < 55) {
+    } else if (passenger < 55) {
       return(paste0((fa("exclamation-circle", fill = "#FFA500")), "<span style=\"color:orange\">PASSENGER IN REAR SEAT ONLY </span>"))
-    } else if (passenger_para < 63) {
-      return(paste0((fa("exclamation-circle", fill = "#FFA500")), "<span style=\"color:orange\">TWO Ballast weights to be fitted </span>"))
-    } else if (passenger_para < 71) {
-      return(paste0((fa("exclamation-circle", fill = "#FFA500")), "<span style=\"color:orange\">ONE Ballast weight to be fitted </span>"))
-    } else if (passenger_para < 111) {
-      print(paste0((fa("check-circle", fill = "#008000")), "No Ballast Required "))
+    } else if (passenger < 64) {
+      return(paste0((fa("exclamation-circle", fill = "#FFA500")), "<span style=\"color:orange\">TWO Ballast weights MUST be fitted </span>"))
+    } else if (passenger < 70) {
+      return(paste0((fa("exclamation-circle", fill = "#FFA500")), "<span style=\"color:orange\">at least ONE Ballast weight MUST be fitted </span>"))
+    } else if (passenger < 96) {
+      print(paste0((fa("check-circle", fill = "#008000")), "Ballast not required, but 1 or 2 may be fitted"))
+    } else if (passenger < 104) {
+      print(paste0((fa("check-circle", fill = "#008000")), "Ballast not required, but 1 may be fitted"))
+    } else if (passenger < 111) {
+      print(paste0((fa("check-circle", fill = "#FF0000")), "<span style=\"color:red\">Ballast weights are NOT PERMITTED</span>"))
     } else
       return(paste0((fa("times-circle", fill = "#FF0000")), "<span style=\"color:red\">PASSENGER TOO HEAVY TO FLY</span>"))
   })
@@ -225,10 +193,9 @@ server <- function(input, output) {
     commander <- input$commander
     passenger <- input$passenger
     aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
+    ballast <- as.numeric(input$ballast)
     
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
+    AUM <- commander + passenger + aircraft + ballast
     
     if(AUM < 580){
       HTML(fa("info-circle"), "Approach speed 55kts")
@@ -240,34 +207,15 @@ server <- function(input, output) {
   output$alt_aircraft <- renderTable({
     commander <- input$commander
     passenger <- input$passenger
-    
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    combined <- commander_para + passenger_para
+    ballast <- as.numeric(input$ballast)
+
+    combined <- commander + passenger + ballast
     dataset <- mutate(dataset, 
                       overweight = if_else(maxcrew < combined, "TRUE", "FALSE"))
     colnames(dataset) = c("Tail No", "A/C Weight", "Max Crew Weight", "Overweight?")
-    dataset
+    dataset[order(dataset$"Tail No"),]
   }, striped = TRUE, spacing = "s")
-  
-  output$stackedbar <- renderPlot({
-    commander <- input$commander
-    passenger <- input$passenger
-    aircraft <- dataset$weight[dataset$aircraft==input$aircraft]
-    
-    commander_para <- commander + 7
-    passenger_para <- passenger + 7
-    AUM <- commander_para + passenger_para + aircraft
-    
-    plotdata <- read.csv("plotdata.csv", fileEncoding="UTF-8-BOM")
-    plotdata$Weight[plotdata$Item=="Aircraft"] <- aircraft
-    plotdata$Weight[plotdata$Item=="Commander"] <- commander
-    plotdata$Weight[plotdata$Item=="Passenger"] <- passenger
-    
-    p1 <- ggplot(data = plotdata, aes(x = Ballast, y = Weight, fill = Item)) + labs(title = paste0("Summary of Weight Components for ",input$aircraft), subtitle = "Red line indicates MAX weight") + geom_bar(stat="identity") + scale_fill_brewer(palette="Paired") + theme_minimal() + geom_hline(yintercept=625, color = "red", size=2) + theme(axis.text = element_text(size = 12), axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 18, face = "bold"), legend.title = element_text(size=12, face="bold"),legend.text = element_text(size=12, face="bold"))
-    
-    print(p1)
-  })
+
 }
 
 # Run the application 
