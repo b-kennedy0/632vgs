@@ -1,7 +1,5 @@
 library(shiny)
 library(shinyvalidate)
-library(ggplot2)
-library(tidyverse)
 library(shinydisconnect)
 library(dplyr)
 library(fontawesome)
