@@ -4,6 +4,7 @@ library(tidyverse)
 library(shinydisconnect)
 library(dplyr)
 library(fontawesome)
+library(DT)
 
 id <- "1aS6l4KAXX7iuvSSfA6OlkYIlC_eF3POd"
 dataset <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
@@ -53,7 +54,7 @@ ui <- fluidPage(
       img(
         src = "632logo.png",
         height = 60,
-        width = 250
+        width = 120
       ),
       br(),
       p(
@@ -86,19 +87,21 @@ ui <- fluidPage(
       ),
       HTML("<hr>"),
       column(
-        4,
+        5,
         tags$h3(HTML(as.character(icon(
           "calculator"
         )), " Calculations")),
         htmlOutput("commander"),
         htmlOutput("passenger"),
-        textOutput("combined_crew"),
         textOutput("ballast_weight"),
+        "------",
+        textOutput("combined_crew"),
+        "------",
         textOutput("air_weight"),
         textOutput("totalaum"),
       ),
       column(
-        4,
+        5,
         tags$h3(HTML(as.character(
           icon("clipboard-check")
         ), " Output")),
@@ -110,7 +113,7 @@ ui <- fluidPage(
       ),
       column(10, HTML("<hr>"), tags$h3(
         HTML(as.character(icon("plane")), " Alternative aircraft")
-      ), tableOutput("alt_aircraft"))
+      ), DTOutput("alt_aircraft"))
     )
   )
 )
@@ -153,7 +156,7 @@ server <- function(input, output) {
         )
       )
     }  else{
-      print(paste0("Aircraft commander with parachute = ", commander, "kg"))
+      print(paste0("Commander (with para) = ", commander, "kg"))
     }
   })
   
@@ -171,15 +174,16 @@ server <- function(input, output) {
         )
       )
     } else{
-      print(paste0("Passenger with parachute = ", passenger, "kg"))
+      print(paste0("Passenger (with para) = ", passenger, "kg"))
     }
   })
   
   output$combined_crew <- renderText({
     commander <- input$commander
     passenger <- input$passenger
-    combined <- commander + passenger
-    print(paste0("Combined crew = ", combined, "kg"))
+    ballast <- as.numeric(input$ballast)
+    combined <- commander + passenger + ballast
+    print(paste0("Total Payload = ", combined, "kg"))
   })
   
   output$ballast_weight <- renderText({
@@ -303,16 +307,20 @@ server <- function(input, output) {
     }
   })
   
-  output$alt_aircraft <- renderTable({
+  output$alt_aircraft <- renderDT({
     commander <- input$commander
     passenger <- input$passenger
     ballast <- as.numeric(input$ballast)
     
     combined <- commander + passenger + ballast
     dataset <- mutate(dataset, overweight = if_else(maxcrew < combined, "TRUE", "FALSE"))
-    colnames(dataset) = c("Tail No", "A/C Weight", "Max Crew Weight", "Overweight?")
-    dataset[order(dataset$"Tail No"), ]
-  }, striped = TRUE, spacing = "s")
+    colnames(dataset) = c("Tail No", "A/C Weight", "Max Payload", "Overweight?")
+    datatable(dataset[order(dataset$"Tail No"), ]) %>% 
+      formatStyle(
+        'Overweight?', target = 'cell', 
+        backgroundColor = styleEqual(c("TRUE", "FALSE"), c('lightcoral', 'lightgreen'))
+      )
+  })
   
 }
 
